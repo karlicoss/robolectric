@@ -164,6 +164,15 @@ public class ShadowTime {
   public static String getCurrentTimezone() {
     return TimeZone.getDefault().getID();
   }
+  
+  @Implementation
+  public void switchTimezone(String timezone) {
+    long date = toMillis(true);
+    long gmtoff = TimeZone.getTimeZone(timezone).getOffset(date);
+    set(date + gmtoff);
+    time.timezone = timezone;
+    time.gmtoff = (gmtoff / 1000);
+  }
 
   @Implementation
   public static int compare(Time a, Time b) {
@@ -251,9 +260,12 @@ public class ShadowTime {
     SimpleDateFormat formatter =  new SimpleDateFormat();
     // Special case Date without time first
     if (rfc3339String.matches("\\d{4}-\\d{2}-\\d{2}")) {
+      final TimeZone tz = TimeZone.getTimeZone(time.timezone);
       formatter.applyLocalizedPattern("yyyy-MM-dd");
-      Calendar calendar = Calendar.getInstance(
-          TimeZone.getTimeZone(time.timezone), Locale.getDefault());
+      // Make sure we parse the date in the context of the specified time zone
+      // instead of the system default time zone.
+      formatter.setTimeZone(tz);
+      Calendar calendar = Calendar.getInstance(tz, Locale.getDefault());
       try {
         calendar.setTime(formatter.parse(rfc3339String));
       } catch (java.text.ParseException e) {

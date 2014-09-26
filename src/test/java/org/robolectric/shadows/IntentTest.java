@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.Parcelable;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -190,6 +191,15 @@ public class IntentTest {
     assertSame(intent, intent.setData(uri));
     assertSame(uri, intent.getData());
     assertNull(intent.getType());
+  }
+  
+  @Test
+  public void testGetScheme() throws Exception {
+    Intent intent = new Intent();
+    Uri uri = Uri.parse("http://robolectric.org");
+    assertSame(intent, intent.setData(uri));
+    assertSame(uri, intent.getData());
+    assertEquals("http", intent.getScheme());
   }
 
   @Test
@@ -538,6 +548,25 @@ public class IntentTest {
     assertThat(intent.putExtra("CharSequence array",
         new CharSequence[] { new TestCharSequence("test") }))
         .isEqualTo(intent);
+  }
+
+  @Test
+  public void getExtra_shouldWorkAfterParcel() {
+    ComponentName componentName = new ComponentName("barcomponent", "compclass");
+    Uri parsed = Uri.parse("https://foo.bar");
+    Intent intent = new Intent();
+    intent.putExtra("key", 123);
+    intent.setAction("Foo");
+    intent.setComponent(componentName);
+    intent.setData(parsed);
+    Parcel parcel = Parcel.obtain();
+    parcel.writeParcelable(intent, 0);
+    parcel.setDataPosition(0);
+    intent = parcel.readParcelable(getClass().getClassLoader());
+    assertThat(intent.getIntExtra("key", 0)).isEqualTo(123);
+    assertThat(intent.getAction()).isEqualTo("Foo");
+    assertThat(intent.getComponent()).isEqualTo(componentName);
+    assertThat(intent.getData()).isEqualTo(parsed);
   }
 
   private static class TestSerializable implements Serializable {
