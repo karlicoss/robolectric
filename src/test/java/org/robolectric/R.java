@@ -212,7 +212,8 @@ public final class R {
     public static final int activity_main = 0x10624;
     public static final int activity_main_1 = 0x10625;
     public static final int ordinal_scrollbar = 0x10626;
-    public static final int custom_layout6 = 0x10627;
+    public static final int custom_layout5 = 0x10627;
+    public static final int custom_layout6 = 0x10628;
   }
 
   public static final class anim {
@@ -329,6 +330,7 @@ public final class R {
     public static final int Theme_ThirdTheme = 0x11008;
     public static final int MyBlackTheme = 0x11009;
     public static final int MyBlueTheme = 0x1100a;
+    public static final int IndirectButtonStyle = 0x1100b;
   }
 
   public static final class fraction {
