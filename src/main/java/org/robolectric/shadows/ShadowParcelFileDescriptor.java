@@ -12,18 +12,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 
-/*
-  This implementation just instantiates ParcelFileDescriptor with a fake FileDescriptor,
-  and uses a RandomAccessFile instead.
- */
 @Implements(ParcelFileDescriptor.class)
 public class ShadowParcelFileDescriptor {
   private RandomAccessFile file;
 
-  /*
-    I ignore mode and open the file for both read & write.
-    Guess that's okay for testing purposes.
-   */
   @Implementation
   public static ParcelFileDescriptor open(File file, int mode) throws FileNotFoundException {
     ParcelFileDescriptor pfd;
@@ -33,8 +25,7 @@ public class ShadowParcelFileDescriptor {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    RandomAccessFile raf = new RandomAccessFile(file, "rw");
-    ((ShadowParcelFileDescriptor) Robolectric.shadowOf_(pfd)).file = raf;
+    ((ShadowParcelFileDescriptor) Robolectric.shadowOf_(pfd)).file = new RandomAccessFile(file, "rw");
     return pfd;
   }
 

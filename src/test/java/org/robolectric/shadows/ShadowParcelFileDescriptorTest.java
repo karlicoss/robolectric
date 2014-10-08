@@ -8,7 +8,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -20,8 +19,6 @@ public class ShadowParcelFileDescriptorTest {
   @Before
   public void setup() throws Exception {
     file = new File(Robolectric.application.getFilesDir(), "test");
-
-    // just touches a file
     FileOutputStream os = new FileOutputStream(file);
     os.close();
   }
