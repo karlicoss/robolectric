@@ -22,7 +22,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.NamedStream;
-import org.robolectric.res.ContentProviderData;
+import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
 
 import java.io.IOException;
@@ -285,7 +285,7 @@ public class ShadowContentResolver {
 
   @Implementation
   public ContentProviderResult[] applyBatch(String authority, ArrayList<ContentProviderOperation> operations) throws OperationApplicationException {
-    ContentProvider provider = providers.get(authority);
+    ContentProvider provider = getProvider(authority);
     if (provider != null) {
       return provider.applyBatch(operations);
     } else {

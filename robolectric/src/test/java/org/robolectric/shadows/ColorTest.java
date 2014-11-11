@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import android.graphics.Color;
-import static org.fest.assertions.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ColorTest {
@@ -59,5 +59,13 @@ public class ColorTest {
     assertThat(hsv[0]).isEqualTo(240f);
     assertThat(hsv[1]).isEqualTo(1.0f);
     assertThat(hsv[2]).isEqualTo(1.0f);
+  }
+
+  @Test
+  public void HSVToColorShouldReverseColorToHSV() {
+      float[] hsv = new float[3];
+      Color.colorToHSV(Color.RED, hsv);
+
+      assertThat(Color.HSVToColor(hsv)).isEqualTo(Color.RED);
   }
 }

@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.util.TestUtil.newConfig;
@@ -62,7 +62,7 @@ public class DefaultTestLifecycleTest {
     shadowOf(application).bind(appManifest, null);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
-    assertThat(receivers.size()).isEqualTo(6);
+    assertThat(receivers.size()).isEqualTo(5);
     assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
   }
 

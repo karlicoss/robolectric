@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
 import android.graphics.Color;
-import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.bytecode.RobolectricInternals;
 
-import static org.fest.reflect.core.Reflection.method;
+import java.lang.reflect.Method;
 
 @Implements(Color.class)
 public class ShadowColor {
@@ -22,11 +22,9 @@ public class ShadowColor {
       colorString = buf.toString();
     }
     try {
-      return method(RobolectricInternals.directMethodName(Color.class.getName(), "parseColor"))
-          .withReturnType(int.class)
-          .withParameterTypes(String.class)
-          .in(Color.class)
-          .invoke(colorString);
+      Method parseColor = Color.class.getDeclaredMethod(RobolectricInternals.directMethodName(Color.class.getName(), "parseColor"), String.class);
+      parseColor.setAccessible(true);
+      return (Integer) parseColor.invoke(null, colorString);
     } catch (Exception e) {
       throw new IllegalArgumentException("Can't parse value from color \"" + colorString + "\"", e);
     }
@@ -46,5 +44,11 @@ public class ShadowColor {
   public static void RGBToHSV(int red, int green, int blue, float hsv[]) {
     java.awt.Color.RGBtoHSB(red, green, blue, hsv);
     hsv[0] = hsv[0] * 360;
+  }
+
+  @Implementation
+  public static int HSVToColor(int alpha, float hsv[]) {
+    int rgb = java.awt.Color.HSBtoRGB(hsv[0] / 360, hsv[1], hsv[2]);
+    return Color.argb(alpha, Color.red(rgb), Color.green(rgb), Color.blue(rgb));
   }
 }

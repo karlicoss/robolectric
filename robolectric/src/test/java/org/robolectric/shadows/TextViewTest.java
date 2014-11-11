@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Random;
 
 import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -68,6 +68,16 @@ public class TextViewTest {
 
     assertThat(actionListener.textView).isSameAs(textView);
     assertThat(actionListener.sentImeId).isEqualTo(EditorInfo.IME_ACTION_GO);
+  }
+
+  @Test
+  public void shouldCreateGetterForEditorActionListener() {
+    TextView textView = new TextView(Robolectric.application);
+    TestOnEditorActionListener actionListener = new TestOnEditorActionListener();
+
+    textView.setOnEditorActionListener(actionListener);
+
+    assertThat(shadowOf(textView).getOnEditorActionListener()).isSameAs(actionListener);
   }
 
   @Test
@@ -459,6 +469,15 @@ public class TextViewTest {
     assertThat(textView.getPaintFlags()).isEqualTo(0);
     textView.setPaintFlags(100);
     assertThat(textView.getPaintFlags()).isEqualTo(100);
+  }
+
+  @Test
+  public void setCompoundDrawablesWithIntrinsicBounds_setsValues() {
+    textView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.l0_red, R.drawable.l1_orange, R.drawable.l2_yellow, R.drawable.l3_green);
+    assertThat(shadowOf(textView).getCompoundDrawablesWithIntrinsicBoundsLeft()).isEqualTo(R.drawable.l0_red);
+    assertThat(shadowOf(textView).getCompoundDrawablesWithIntrinsicBoundsTop()).isEqualTo(R.drawable.l1_orange);
+    assertThat(shadowOf(textView).getCompoundDrawablesWithIntrinsicBoundsRight()).isEqualTo(R.drawable.l2_yellow);
+    assertThat(shadowOf(textView).getCompoundDrawablesWithIntrinsicBoundsBottom()).isEqualTo(R.drawable.l3_green);
   }
 
   private List<MockTextWatcher> anyNumberOfTextWatchers() {

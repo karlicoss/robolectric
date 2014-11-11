@@ -12,18 +12,9 @@ public @interface Implements {
   /**
    * The Android class to be shadowed.
    */
-  Class<?> value();
+  Class<?> value() default void.class;
 
   String className() default "";
-
-  /**
-   * If true, Robolectric will invoke the shadow's reset method so it can release any static
-   * state between tests.
-   * 
-   * @deprecated Use the @Resetter annotation instead
-   */
-  @Deprecated
-  boolean resetStaticState() default false;
 
   /**
    * If true, Robolectric will invoke the actual Android code for any method that isn't shadowed.

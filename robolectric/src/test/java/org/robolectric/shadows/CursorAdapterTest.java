@@ -17,7 +17,7 @@ import java.util.List;
 
 import static android.widget.CursorAdapter.FLAG_AUTO_REQUERY;
 import static android.widget.CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class CursorAdapterTest {
@@ -56,6 +56,18 @@ public class CursorAdapterTest {
     adapter.changeCursor(null);
 
     assertThat(curs.isClosed()).isTrue();
+    assertThat(adapter.getCursor()).isNull();
+  }
+
+  @Test
+  public void testSwapCursor() {
+    assertThat(adapter.getCursor()).isNotNull();
+    assertThat(adapter.getCursor()).isSameAs(curs);
+
+    Cursor oldCursor = adapter.swapCursor(null);
+
+    assertThat(oldCursor).isSameAs(curs);
+    assertThat(curs.isClosed()).isFalse();
     assertThat(adapter.getCursor()).isNull();
   }
 

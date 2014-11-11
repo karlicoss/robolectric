@@ -1,16 +1,14 @@
 package org.robolectric.shadows;
 
 import android.graphics.drawable.Drawable;
-import android.view.Window;
-
 import android.widget.ProgressBar;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.ReflectionHelpers;
 
 import static org.robolectric.Robolectric.directlyOn;
 
-@Implements(value = Robolectric.Anything.class, className = ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME)
+@Implements(className = ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME)
 public class ShadowPhoneWindow extends ShadowWindow {
   public static final String PHONE_WINDOW_CLASS_NAME = "com.android.internal.policy.impl.PhoneWindow";
 
@@ -20,7 +18,7 @@ public class ShadowPhoneWindow extends ShadowWindow {
   @Implementation
   public void setTitle(CharSequence title) {
     this.title = title;
-    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setTitle", CharSequence.class).invoke(title);
+    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setTitle", new ReflectionHelpers.ClassParameter(CharSequence.class, title));
   }
 
   public CharSequence getTitle() {
@@ -30,7 +28,7 @@ public class ShadowPhoneWindow extends ShadowWindow {
   @Implementation
   public void setBackgroundDrawable(Drawable drawable) {
     this.backgroundDrawable = drawable;
-    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setBackgroundDrawable", Drawable.class).invoke(drawable);
+    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setBackgroundDrawable", new ReflectionHelpers.ClassParameter(Drawable.class, drawable));
   }
 
   public Drawable getBackgroundDrawable() {
@@ -39,11 +37,11 @@ public class ShadowPhoneWindow extends ShadowWindow {
 
   @Override
   public ProgressBar getProgressBar() {
-    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getHorizontalProgressBar", boolean.class).invoke(false);
+    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getHorizontalProgressBar", new ReflectionHelpers.ClassParameter(boolean.class, false));
   }
 
   @Override
   public ProgressBar getIndeterminateProgressBar() {
-    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getCircularProgressBar", boolean.class).invoke(false);
+    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getCircularProgressBar", new ReflectionHelpers.ClassParameter(boolean.class, false));
   }
 }

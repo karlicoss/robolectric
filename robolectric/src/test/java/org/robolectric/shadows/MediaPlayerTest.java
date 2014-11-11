@@ -8,7 +8,7 @@ import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MediaPlayerTest {
@@ -20,6 +20,13 @@ public class MediaPlayerTest {
   public void setUp() throws Exception {
     mediaPlayer = Robolectric.newInstanceOf(MediaPlayer.class);
     shadowMediaPlayer = Robolectric.shadowOf(mediaPlayer);
+  }
+
+  @Test
+  public void isPlaying_shouldBeFalseUntilPlayIsCalled() {
+    assertThat(mediaPlayer.isPlaying()).isFalse();
+    mediaPlayer.start();
+    assertThat(mediaPlayer.isPlaying()).isTrue();
   }
 
   @Test

@@ -2,6 +2,7 @@ package org.robolectric.bytecode;
 
 import android.R;
 import org.robolectric.AndroidManifest;
+import org.robolectric.DependencyJar;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.SdkConfig;
 import org.robolectric.SdkEnvironment;
@@ -62,7 +63,7 @@ public class Setup {
       I18nException.class,
       Transcript.class,
       org.robolectric.bytecode.DirectObjectMarker.class,
-      org.apache.maven.model.Dependency.class,
+      DependencyJar.class,
       ParallelUniverseInterface.class
   );
 
@@ -96,10 +97,10 @@ public class Setup {
   }
 
   public boolean shouldAcquire(String name) {
-    // the org.robolectric.res package lives in the base classloader, but not its tests; yuck.
+    // the org.robolectric.res and org.robolectric.manifest packages live in the base classloader, but not its tests; yuck.
     int lastDot = name.lastIndexOf('.');
     String pkgName = name.substring(0, lastDot == -1 ? 0 : lastDot);
-    if (pkgName.equals("org.robolectric.res")) {
+    if (pkgName.equals("org.robolectric.res") || (pkgName.equals("org.robolectric.manifest"))) {
       return name.contains("Test");
     }
 
