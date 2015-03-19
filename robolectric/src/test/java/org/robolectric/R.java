@@ -205,7 +205,6 @@ public final class R {
     public static final int webview_holder = 0x1061d;
     public static final int with_invalid_onclick = 0x1061e;
     public static final int styles_button_with_style_layout = 0x1061f;
-    public static final int activity_fragment = 0x10620;
     public static final int custom_title = 0x10621;
     public static final int remote_views = 0x10622;
     public static final int main_layout = 0x10623;
@@ -230,6 +229,8 @@ public final class R {
     public static final int raw_resource = 0x10900;
     public static final int raw_no_ext = 0x10901;
     public static final int lib_raw_resource = 0x10902;
+    public static final int lib_raw_resource_from_2 = 0x10903;
+    public static final int lib_raw_resource_from_3 = 0x10904;
   }
 
   public static final class attr {
@@ -259,6 +260,7 @@ public final class R {
 
   public static final class xml {
     public static final int preferences = 0x10c00;
+    public static final int dialog_preferences = 0x10c01;
   }
 
   public static final class styleable {

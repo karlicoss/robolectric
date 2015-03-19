@@ -1,10 +1,10 @@
 package org.robolectric.util;
 
 import android.content.res.Resources;
-import org.robolectric.AndroidManifest;
-import org.robolectric.MavenDependencyResolver;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.internal.dependency.MavenDependencyResolver;
 import org.robolectric.R;
-import org.robolectric.SdkConfig;
+import org.robolectric.internal.SdkConfig;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.Fs;
@@ -21,7 +21,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URL;
 import java.util.Collection;
 
 import static org.junit.Assert.assertTrue;
@@ -105,8 +104,8 @@ public abstract class TestUtil {
 
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
-      URL url = new MavenDependencyResolver().getLocalArtifactUrl(SdkConfig.getDefaultSdk().getSystemResourceDependency());
-      Fs fs = Fs.fromJar(url);
+      SdkConfig sdkConfig = new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION);
+      Fs fs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(sdkConfig.getSystemResourceDependency()));
       SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, "android", fs.join("res"), fs.join("assets"));
     }
     return SYSTEM_RESOURCE_PATH;

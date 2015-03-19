@@ -7,6 +7,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.test.TemporaryFolder;
@@ -17,7 +18,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.newConfig;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -84,8 +85,14 @@ public class DefaultTestLifecycleTest {
 
   @Test public void shouldLoadConfigApplicationIfSpecified() throws Exception {
     Application application = defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(-1, "", "", "", -1, new Class[0], TestFakeApp.class, new String[0]));
+        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(-1, "", "", "", "", -1, new Class[0], TestFakeApp.class, new String[0]));
     assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
+  }
+
+  @Test public void shouldLoadConfigInnerClassApplication() throws Exception {
+    Application application = defaultTestLifecycle.createApplication(null,
+        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(-1, "", "", "", "", -1, new Class[0], TestFakeAppInner.class, new String[0]));
+    assertThat(application).isExactlyInstanceOf(TestFakeAppInner.class);
   }
 
   @Test public void shouldLoadTestApplicationIfClassIsPresent() throws Exception {
@@ -110,8 +117,9 @@ public class DefaultTestLifecycleTest {
             "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
             "          package=\"" + packageName + "\">\n" +
             "    " + contents + "\n" +
-            "<application/>\n" +
             "</manifest>\n");
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
+
+  public static class TestFakeAppInner extends Application { }
 }

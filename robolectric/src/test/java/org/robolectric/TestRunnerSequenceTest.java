@@ -7,7 +7,9 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.bytecode.Setup;
+import org.robolectric.internal.bytecode.InstrumentingClassLoaderConfig;
+import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FsFile;
 import org.robolectric.util.Transcript;
 
@@ -45,7 +47,7 @@ public class TestRunnerSequenceTest {
   @Test public void whenNoAppManifest_shouldRunThingsInTheRightOrder() throws Exception {
     StateHolder.transcript = new Transcript();
     assertNoFailures(run(new Runner(SimpleTest.class) {
-      @Override protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
+      @Override protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir) {
         return null;
       }
     }));
@@ -97,8 +99,8 @@ public class TestRunnerSequenceTest {
       super(testClass);
     }
 
-    @Override public Setup createSetup() {
-      return new Setup() {
+    @Override public InstrumentingClassLoaderConfig createSetup() {
+      return new InstrumentingClassLoaderConfig() {
         @Override public boolean shouldAcquire(String name) {
           if (name.equals(StateHolder.class.getName())) return false;
           return super.shouldAcquire(name);
@@ -107,7 +109,7 @@ public class TestRunnerSequenceTest {
     }
 
     @Override
-    protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
+    protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir) {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
 
