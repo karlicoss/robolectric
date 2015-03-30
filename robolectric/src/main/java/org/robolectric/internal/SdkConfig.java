@@ -41,7 +41,7 @@ public class SdkConfig {
   public DependencyJar[] getSdkClasspathDependencies() {
     return new DependencyJar[] {
         createDependency("org.robolectric", "android-all", artifactVersionString, null),
-        createDependency("org.robolectric", "shadows-core", "3.0-SNAPSHOT", Integer.toString(apiLevel)),
+        createDependency("org.robolectric", "shadows-core", "3.0-karlicos", Integer.toString(apiLevel)),
         createDependency("org.json", "json", "20080701", null),
         createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", null)
     };
