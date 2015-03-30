@@ -13,6 +13,13 @@ import java.util.Hashtable;
 public class MavenDependencyResolver implements DependencyResolver {
   private final Project project = new Project();
 
+  public RemoteRepository karlicosRepository() {
+    RemoteRepository rep = new RemoteRepository();
+    rep.setUrl("https://raw.github.com/karlicoss/robolectric-mvn-repo/master/");
+    rep.setId("robolectric-karlicos");
+    return rep;
+  }
+  
   /**
    * Get an array of local artifact URLs for the given dependencies. The order of the URLs is guaranteed to be the
    * same as the input order of dependencies, i.e., urls[i] is the local artifact URL for dependencies[i].
@@ -25,6 +32,7 @@ public class MavenDependencyResolver implements DependencyResolver {
     sonatypeRepository.setUrl("https://oss.sonatype.org/content/groups/public/");
     sonatypeRepository.setId("sonatype");
     dependenciesTask.addConfiguredRemoteRepository(sonatypeRepository);
+    dependenciesTask.addConfiguredRemoteRepository(karlicosRepository());
     dependenciesTask.setProject(project);
     for (DependencyJar dependencyJar : dependencies) {
       Dependency dependency = new Dependency();
