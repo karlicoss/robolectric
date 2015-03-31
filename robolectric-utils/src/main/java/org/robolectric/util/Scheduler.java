@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Class that manages a queue of Runnables that are scheduled to run now (or at some time in
@@ -23,7 +24,7 @@ import java.util.ListIterator;
  * </ul>
  */
 public class Scheduler {
-  private long currentTime = 100;
+  private AtomicLong currentTime = new AtomicLong(100);
   private boolean paused = false;
   private boolean isConstantlyIdling = false;
   private boolean isExecutingRunnable = false;
@@ -35,8 +36,8 @@ public class Scheduler {
    *
    * @return  Current time.
    */
-  public synchronized long getCurrentTime() {
-    return currentTime;
+  public long getCurrentTime() {
+    return currentTime.get();
   }
 
   /**
@@ -80,9 +81,9 @@ public class Scheduler {
    */
   public synchronized void postDelayed(Runnable runnable, long delayMillis) {
     if ((!isConstantlyIdling && (paused || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
-      queueRunnableAndSort(runnable, currentTime + delayMillis);
+      queueRunnableAndSort(runnable, currentTime.get() + delayMillis);
     } else {
-      runOrQueueRunnable(runnable, currentTime + delayMillis);
+      runOrQueueRunnable(runnable, currentTime.get() + delayMillis);
     }
   }
 
@@ -93,9 +94,9 @@ public class Scheduler {
    */
   public synchronized void postAtFrontOfQueue(Runnable runnable) {
     if (paused || Thread.currentThread() != associatedThread) {
-      runnables.add(0, new ScheduledRunnable(runnable, currentTime));
+      runnables.add(0, new ScheduledRunnable(runnable, currentTime.get()));
     } else {
-      runOrQueueRunnable(runnable, currentTime);
+      runOrQueueRunnable(runnable, currentTime.get());
     }
   }
 
@@ -139,7 +140,7 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public synchronized boolean advanceBy(long interval) {
-    long endingTime = currentTime + interval;
+    long endingTime = currentTime.get() + interval;
     return advanceTo(endingTime);
   }
 
@@ -150,8 +151,8 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public synchronized boolean advanceTo(long endTime) {
-    if (endTime - currentTime < 0 || size() < 1) {
-      currentTime = endTime;
+    if (endTime - currentTime.get() < 0 || size() < 1) {
+      currentTime.set(endTime);
       return false;
     }
 
@@ -160,7 +161,7 @@ public class Scheduler {
       runOneTask();
       ++runCount;
     }
-    currentTime = endTime;
+    currentTime.set(endTime);
     return runCount > 0;
   }
 
@@ -175,7 +176,7 @@ public class Scheduler {
     }
 
     ScheduledRunnable postedRunnable = runnables.remove(0);
-    currentTime = postedRunnable.scheduledTime;
+    currentTime.set(postedRunnable.scheduledTime);
     postedRunnable.run();
     return true;
   }
@@ -186,7 +187,7 @@ public class Scheduler {
    * @return  True if any runnables can be executed.
    */
   public synchronized boolean areAnyRunnable() {
-    return nextTaskIsScheduledBefore(currentTime);
+    return nextTaskIsScheduledBefore(currentTime.get());
   }
 
   /**
@@ -231,8 +232,8 @@ public class Scheduler {
     } finally {
       isExecutingRunnable = false;
     }
-    if (scheduledTime > currentTime) {
-      currentTime = scheduledTime;
+    if (scheduledTime > currentTime.get()) {
+      currentTime.set(scheduledTime);
     }
     // The runnable we just ran may have queued other runnables. If there are
     // any pending immediate execution we should run these now too, unless we are
