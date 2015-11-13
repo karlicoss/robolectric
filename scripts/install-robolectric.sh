@@ -3,6 +3,7 @@
 # Install Robolectric into the local Maven repository.
 #
 set -e
+set -x
 
 PROJECT=$(cd $(dirname "$0")/..; pwd)
 if [ -z ${INCLUDE_SOURCE+x} ]; then SOURCE_ARG=""; else SOURCE_ARG="source:jar"; fi
