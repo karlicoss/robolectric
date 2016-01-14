@@ -29,12 +29,7 @@ import org.robolectric.internal.Shadow;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import static org.robolectric.Shadows.shadowOf;
@@ -59,7 +54,7 @@ public class ShadowContentResolver {
   private final Map<String, ArrayList<ContentProviderOperation>> contentProviderOperations = new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
 
-  private final Map<Uri, CopyOnWriteArraySet<ContentObserver>> contentObservers = new HashMap<>();
+  private final Map<Uri, CopyOnWriteArraySet<ContentObserverWrapper>> contentObservers = new HashMap<>();
 
   private static final Map<String, Map<Account, Status>>  syncableAccounts =
       new HashMap<>();
@@ -271,20 +266,37 @@ public class ShadowContentResolver {
     }
   }
 
+  // TODO test notifiedUris in unit tests
+  // TODO don't return the uri itself?
+  private Set<Uri> getDescendents(Uri uri) {
+    final String uriString = uri.getPath();
+    Set<Uri> uris = new HashSet<>();
+    for (Uri registeredUri : contentObservers.keySet()) { // TODO contentObservers
+      if (registeredUri.getPath().contains(uriString)) {
+        uris.add(registeredUri);
+      }
+    }
+    return uris;
+  }
+
   @Implementation
   public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
+    // TODO!!! how should it work in conjunction with notifiedUris?
     notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
 
-    CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
-    if (observers != null) {
-      for (ContentObserver obs : observers) {
-        if ( obs != null && obs != observer  ) {
-          obs.dispatchChange( false, uri );
+    for (Uri descendent : getDescendents(uri)) {
+      for (ContentObserverWrapper wrapper : contentObservers.get(descendent)) {
+        if (uri.equals(descendent) || wrapper.notifyDescendents) {
+          ContentObserver obs = wrapper.observer;
+          if (obs != null && obs != observer) {
+            obs.dispatchChange(false, uri);
+          }
         }
       }
     }
-    if ( observer != null && observer.deliverSelfNotifications() ) {
-      observer.dispatchChange( true, uri );
+
+    if (observer != null && observer.deliverSelfNotifications()) {
+      observer.dispatchChange(true, uri);
     }
   }
 
@@ -504,12 +516,12 @@ public class ShadowContentResolver {
 
   @Implementation
   public void registerContentObserver( Uri uri, boolean notifyForDescendents, ContentObserver observer) {
-    CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
+    CopyOnWriteArraySet<ContentObserverWrapper> observers = contentObservers.get(uri);
     if (observers == null) {
       observers = new CopyOnWriteArraySet<>();
       contentObservers.put(uri, observers);
     }
-    observers.add(observer);
+    observers.add(new ContentObserverWrapper(observer, notifyForDescendents));
   }
 
   @Implementation
@@ -520,8 +532,8 @@ public class ShadowContentResolver {
   @Implementation
   public void unregisterContentObserver( ContentObserver observer ) {
     if ( observer != null ) {
-      for (CopyOnWriteArraySet<ContentObserver> observers : contentObservers.values()) {
-        observers.remove(observer);
+      for (CopyOnWriteArraySet<ContentObserverWrapper> observers : contentObservers.values()) {
+        observers.remove(new ContentObserverWrapper(observer, false)); // TODO meh
       }
     }
   }
@@ -556,8 +568,16 @@ public class ShadowContentResolver {
    * @return The content observers
    */
   public Collection<ContentObserver> getContentObservers( Uri uri ) {
-    CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
-    return (observers == null) ? Collections.<ContentObserver>emptyList() : observers;
+    CopyOnWriteArraySet<ContentObserverWrapper> wrappers = contentObservers.get(uri);
+    if (wrappers == null) {
+      return Collections.emptyList();
+    } else {
+      List<ContentObserver> observers = new ArrayList<>();
+      for (ContentObserverWrapper wrapper : wrappers) {
+        observers.add(wrapper.observer);
+      }
+      return new CopyOnWriteArraySet<>(observers);
+    }
   }
 
   private static ContentProvider createAndInitialize(ContentProviderData providerData) {
@@ -682,6 +702,34 @@ public class ShadowContentResolver {
     @Override
     public String toString() {
       return "stream for " + uri;
+    }
+  }
+
+  private static class ContentObserverWrapper {
+
+    public final ContentObserver observer;
+
+    public final boolean notifyDescendents;
+
+    private ContentObserverWrapper(ContentObserver observer, boolean notifyDescendents) {
+      this.observer = observer;
+      this.notifyDescendents = notifyDescendents;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      ContentObserverWrapper that = (ContentObserverWrapper) o;
+
+      return !(observer != null ? !observer.equals(that.observer) : that.observer != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+      return observer != null ? observer.hashCode() : 0;
     }
   }
 }

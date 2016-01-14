@@ -40,9 +40,11 @@ import java.util.List;
 
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 import static org.robolectric.Shadows.shadowOf;
 
+//@RunWith(TestRunners.WithDefaults.class) TODO REMOVEME
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowContentResolverTest {
   static final String AUTHORITY = "org.robolectric";
@@ -70,6 +72,59 @@ public class ShadowContentResolverTest {
 
     assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri21);
     assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri22);
+  }
+
+  @Test
+  public void registerContentObserver_shouldNotNotifyDescendantIfNotifyForDescendentsFalse() {
+    final Uri baseUri = Uri.parse("content://" + AUTHORITY).buildUpon().appendPath("base").build();
+    final Uri descendantUri = baseUri.buildUpon().appendPath("desc").build();
+
+    TestContentObserver co1 = new TestContentObserver(null);
+    TestContentObserver co2 = new TestContentObserver(null);
+    contentResolver.registerContentObserver(descendantUri, false, co1);
+    contentResolver.registerContentObserver(descendantUri, false, co2);
+    contentResolver.notifyChange(baseUri, null);
+
+    assertThat(co1.changed).isFalse();
+    assertThat(co2.changed).isFalse();
+  }
+
+  @Test
+  public void registerContentObserver_shouldNotifyDescendantUriIfNotifyForDescendentsTrue() {
+    final Uri baseUri = Uri.parse("content://" + AUTHORITY).buildUpon().appendPath("base").build();
+    final Uri descendantUri = baseUri.buildUpon().appendPath("desc").build();
+
+    TestContentObserver co1 = new TestContentObserver(null);
+    TestContentObserver co2 = new TestContentObserver(null);
+    TestContentObserver co3 = new TestContentObserver(null);
+    contentResolver.registerContentObserver(descendantUri, true, co1);
+    contentResolver.registerContentObserver(descendantUri, false, co2);
+    contentResolver.registerContentObserver(descendantUri, true, co3);
+    contentResolver.notifyChange(baseUri, null);
+
+    assertThat(co1.changed).isTrue();
+    assertThat(co2.changed).isFalse();
+    assertThat(co3.changed).isTrue();
+  }
+
+  @Test
+  public void registerContentObserver_shouldNotifyAllDescentantsIfNotifyForDescendentsTrue() {
+    final Uri baseUri = Uri.parse("content://" + AUTHORITY).buildUpon().appendPath("base").build();
+    final Uri descendantUri = baseUri.buildUpon().appendPath("desc").build();
+    final Uri deepDescendantUri = descendantUri.buildUpon().appendEncodedPath("deeper").appendPath("and_deeper").build();
+    final Uri irrelevantUri = Uri.parse("content://" + AUTHORITY).buildUpon().appendPath("irrelevant").build();
+
+    TestContentObserver descendantObserver = new TestContentObserver(null);
+    TestContentObserver deepDescendantObserver = new TestContentObserver(null);
+    TestContentObserver irrelevantObserver = new TestContentObserver(null);
+    shadowContentResolver.registerContentObserver(descendantUri, true, descendantObserver);
+    shadowContentResolver.registerContentObserver(deepDescendantUri, true, deepDescendantObserver);
+    shadowContentResolver.registerContentObserver(irrelevantUri, true, irrelevantObserver);
+    contentResolver.notifyChange(baseUri, null);
+
+    assertThat(deepDescendantObserver.changed).isTrue();
+    assertThat(descendantObserver.changed).isTrue();
+    assertThat(irrelevantObserver.changed).isFalse();
   }
 
   @Test
