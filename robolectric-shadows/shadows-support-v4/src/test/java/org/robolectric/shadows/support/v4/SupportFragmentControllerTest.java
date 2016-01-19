@@ -12,11 +12,14 @@ import android.widget.LinearLayout;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.util.TestRunnerWithManifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunnerWithManifest.class)
 public class SupportFragmentControllerTest {
@@ -129,10 +132,54 @@ public class SupportFragmentControllerTest {
     assertThat(fragment.isVisible()).isTrue();
   }
 
-  private static class LoginFragment extends Fragment {
+  @Test
+  public void createWithBundle() {
+    final LoginFragmentWithState spyFragment = new LoginFragmentWithState();
+//    final LoginFragment spyFragment = new LoginFragment();
+    final SupportFragmentController<LoginFragmentWithState> controller = SupportFragmentController.of(spyFragment, LoginActivity.class);
+
+    controller.create().start();
+    controller.get().setState("some_state");
+
+    FragmentActivity activity = controller.get().getActivity();
+    ShadowActivity shadowActivity = shadowOf(activity);
+    shadowActivity.recreate();
+
+
+//    final Bundle bundle = new Bundle();
+//    controller.create(bundle);
+
+//    verify(spyFragment).onCreate(bund);
+  }
+
+  public static class LoginFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       return inflater.inflate(R.layout.fragment_contents, container, false);
+    }
+  }
+
+  public static class LoginFragmentWithState extends LoginFragment {
+    public static final String STATE_KEY = "STATE_KEY";
+
+    public String state;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      if (savedInstanceState != null) {
+        state = savedInstanceState.getString(STATE_KEY);
+      }
+    }
+
+    public void setState(String newState) {
+      this.state = newState;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+      super.onSaveInstanceState(outState);
+      outState.putString(STATE_KEY, state);
     }
   }
 

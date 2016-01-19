@@ -128,6 +128,16 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
     return this;
   }
 
+  public SupportFragmentController<F> recreate() {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.recreate();
+      }
+    });
+    return this;
+  }
+
   private static class FragmentControllerActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {

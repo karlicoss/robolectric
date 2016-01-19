@@ -24,6 +24,8 @@ import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
 import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+import static org.robolectric.Shadows.shadowOf;
+
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
   private final ShadowsAdapter shadowsAdapter;
   private final ShadowActivityAdapter shadowReference;
@@ -206,6 +208,11 @@ public class ActivityController<T extends Activity> extends ComponentController<
 
   public ActivityController<T> userLeaving() {
     invokeWhilePaused("performUserLeaving");
+    return this;
+  }
+
+  public ActivityController<T> recreate() {
+    shadowOf(component).recreate();
     return this;
   }
 

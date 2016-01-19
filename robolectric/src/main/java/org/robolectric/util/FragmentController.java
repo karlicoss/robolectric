@@ -134,6 +134,16 @@ public class FragmentController<F extends Fragment> extends ComponentController<
     return this;
   }
 
+  public FragmentController<F> recreate() {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.recreate();
+      }
+    });
+    return this;
+  }
+
   @Override
   public FragmentController<F> withIntent(final Intent intent) {
     shadowMainLooper.runPaused(new Runnable() {
